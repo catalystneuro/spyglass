@@ -1,7 +1,10 @@
 import datetime
 
+import numpy as np
 import pynwb
 import pytest
+
+from spyglass.utils.nwb_helper_fn import _get_epoch_groups
 
 
 @pytest.fixture(scope="module")
@@ -61,3 +64,34 @@ def test_electrical_series(get_electrode_indices, custom_nwbfile):
     eseries = custom_nwbfile.acquisition["eseries"]
     ret = get_electrode_indices(eseries, [102, 105])
     assert ret == [0, 3]
+
+
+class TestGetEpochGroups:
+    @pytest.fixture
+    def position_with_timestamps(self):
+        spatial_series = pynwb.behavior.SpatialSeries(
+            name="series_0",
+            data=np.zeros((100, 2)),
+            timestamps=np.linspace(5.0, 10.0, 100),
+            reference_frame="unknown",
+        )
+        return pynwb.behavior.Position(spatial_series=spatial_series)
+
+    @pytest.fixture
+    def position_with_rate(self):
+        spatial_series = pynwb.behavior.SpatialSeries(
+            name="series_0",
+            data=np.zeros((100, 2)),
+            starting_time=5.0,
+            rate=30.0,
+            reference_frame="unknown",
+        )
+        return pynwb.behavior.Position(spatial_series=spatial_series)
+
+    def test_timestamps(self, position_with_timestamps):
+        result = _get_epoch_groups(position_with_timestamps)
+        assert result == {5.0: [0]}
+
+    def test_starting_time_and_rate(self, position_with_rate):
+        result = _get_epoch_groups(position_with_rate)
+        assert result == {5.0: [0]}
