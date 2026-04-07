@@ -498,7 +498,10 @@ def _get_epoch_groups(position: pynwb.behavior.Position):
     for pos_epoch, spatial_series in enumerate(
         position.spatial_series.values()
     ):
-        epoch_start_time[pos_epoch] = spatial_series.timestamps[0]
+        if spatial_series.timestamps is not None:
+            epoch_start_time[pos_epoch] = spatial_series.timestamps[0]
+        else:
+            epoch_start_time[pos_epoch] = spatial_series.starting_time
 
     return {
         i: [j[0] for j in j]
