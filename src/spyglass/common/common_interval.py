@@ -36,7 +36,14 @@ class IntervalList(SpyglassIngestion, dj.Manual):
     """
 
     # See #630, #664. Excessive key length.
-    _source_nwb_object_name = "epochs"
+    # A file's `invalid_times` is a TimeIntervals table like `epochs`, so it
+    # ingests through the same mapping. Its rows are namespaced on the way in;
+    # see `generate_entries_from_nwb_object`. Other TimeIntervals tables in a
+    # file, `trials` in particular, are not intervals of the session and are
+    # excluded by this filter.
+    _source_nwb_object_name = ["epochs", "invalid_times"]
+
+    _invalid_times_prefix = "invalid_"
 
     @property
     def _source_nwb_object_type(self):
@@ -94,6 +101,50 @@ class IntervalList(SpyglassIngestion, dj.Manual):
         start_time = getattr(epoch_row, "start_time", None)
         stop_time = getattr(epoch_row, "stop_time", None)
         return np.asarray([[start_time, stop_time]])
+
+    def generate_entries_from_nwb_object(self, nwb_obj, base_key=None):
+        """Namespace and group the rows that came from `invalid_times`. #1336.
+
+        `epochs` and `invalid_times` are read through one mapping, so both name
+        a tagless row `interval_<id>` and would collide on the primary key.
+        Rows sharing a tag collide with each other for the same reason, and are
+        merged into one list -- `valid_times` is an (n, 2) array so that one
+        list can hold many intervals.
+
+        Parameters
+        ----------
+        nwb_obj : object
+            A TimeIntervals table, or one of its rows on the recursive call
+            `super()` makes per row.
+        base_key : dict, optional
+            Key the generated entries build on. Default empty.
+
+        Returns
+        -------
+        IngestionEntries
+            Planned entries, prefixed and grouped by name.
+        """
+        entries = super().generate_entries_from_nwb_object(nwb_obj, base_key)
+
+        # Only the table carries a name, so the rows are renamed once, here,
+        # when the recursion returns -- a row cannot know its source table.
+        if getattr(nwb_obj, "name", None) != "invalid_times":
+            return entries
+
+        grouped = dict()  # name -> entry, in first-seen order
+        for entry in entries.get(self, []):
+            name = self._invalid_times_prefix + entry["interval_list_name"]
+            entry["interval_list_name"] = name
+
+            if (first := grouped.setdefault(name, entry)) is not entry:
+                first["valid_times"] = np.vstack(
+                    (first["valid_times"], entry["valid_times"])
+                )
+
+        if grouped:
+            entries[self] = list(grouped.values())
+
+        return entries
 
     def fetch_interval(self):
         """Fetch interval list object for a given key."""
@@ -1005,293 +1056,3 @@ class Interval:
             "interval_list_name", "pipeline", "nwb_file_name", "valid_times"
         )
         return times
-
-
-def intervals_by_length(interval_list, min_length=0.0, max_length=1e10):
-    """Select intervals of certain lengths from an interval list.
-
-    Parameters
-    ----------
-    interval_list : array_like
-        Each element is (start time, stop time), i.e. an interval in seconds.
-    min_length : float, optional
-        Minimum interval length in seconds. Defaults to 0.0.
-    max_length : float, optional
-        Maximum interval length in seconds. Defaults to 1e10.
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "intervals_by_length",
-        alt="Interval(interval_list).by_length(min_length, max_length).times",
-        doc=_INTERVAL_DOC,
-    )
-
-    return Interval(interval_list).by_length(min_length, max_length).times
-
-
-def interval_list_contains_ind(interval_list, timestamps):
-    """Find indices of list of timestamps contained in an interval list.
-
-    Parameters
-    ----------
-    interval_list : array_like
-        Each element is (start time, stop time), i.e. an interval in seconds.
-    timestamps : array_like
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_list_contains_ind",
-        alt="Interval(interval_list).contains(timestamps, as_indices=True)",
-        doc=_INTERVAL_DOC,
-    )
-
-    return Interval(interval_list).contains(timestamps, as_indices=True)
-
-
-def interval_list_contains(interval_list, timestamps):
-    """Find timestamps that are contained in an interval list.
-
-    Parameters
-    ----------
-    interval_list : array_like
-        Each element is (start time, stop time), i.e. an interval in seconds.
-    timestamps : array_like
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_list_contains",
-        alt="Interval(interval_list).contains(timestamps)",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(interval_list).contains(timestamps)
-
-
-def interval_list_excludes_ind(interval_list, timestamps):
-    """Find indices of timestamps that are not contained in an interval list.
-
-    Parameters
-    ----------
-    interval_list : array_like
-        Each element is (start time, stop time), i.e. an interval in seconds.
-    timestamps : array_like
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_list_excludes_ind",
-        alt="Interval(interval_list).excludes(timestamps, as_indices=True)",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(interval_list).excludes(timestamps, as_indices=True)
-
-
-def interval_list_excludes(interval_list, timestamps):
-    """Find timestamps that are not contained in an interval list.
-
-    Parameters
-    ----------
-    interval_list : array_like
-        Each element is (start time, stop time), i.e. an interval in seconds.
-    timestamps : array_like
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_list_excludes",
-        alt="Interval(interval_list).excludes(timestamps)",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(interval_list).excludes(timestamps)
-
-
-def consolidate_intervals(interval_list):
-    """Consolidate overlapping intervals in an interval list."""
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "consolidate_intervals",
-        alt="Interval(interval_list).consolidate().times",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(interval_list).consolidate().times
-
-
-def interval_list_intersect(interval_list1, interval_list2, min_length=0):
-    """Finds the intersections between two interval lists
-
-    Each interval is (start time, stop time)
-
-    Parameters
-    ----------
-    interval_list1 : np.array, (N,2) where N = number of intervals
-    interval_list2 : np.array, (N,2) where N = number of intervals
-    min_length : float, optional.
-        Minimum length of intervals to include, default 0
-
-    Returns
-    -------
-    interval_list: np.array, (N,2)
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_list_intersect",
-        alt="Interval(interval_list1).intersect(interval_list2, min_length).times",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(interval_list1).intersect(interval_list2, min_length).times
-
-
-def union_adjacent_index(interval1, interval2):
-    """Union index-adjacent intervals. If not adjacent, just concatenate.
-
-    e.g. [a,b] and [b+1, c] is converted to [a,c]
-
-    Parameters
-    ----------
-    interval1 : np.array
-    interval2 : np.array
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "union_adjacent_index",
-        alt="Interval(interval1).union_adjacent_index(interval2).times",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(interval1).union_adjacent_index(interval2).times
-
-
-def interval_list_union(
-    interval_list1: np.ndarray,
-    interval_list2: np.ndarray,
-    min_length: float = 0.0,
-    max_length: float = 1e10,
-) -> np.ndarray:
-    """Finds the union (all times in one or both) for two interval lists
-
-    Parameters
-    ----------
-    interval_list1 : np.ndarray
-        The first interval list [start, stop]
-    interval_list2 : np.ndarray
-        The second interval list [start, stop]
-    min_length : float, optional
-        Minimum length of interval for inclusion in output, default 0.0
-    max_length : float, optional
-        Maximum length of interval for inclusion in output, default 1e10
-
-    Returns
-    -------
-    np.ndarray
-        Array of intervals [start, stop]
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_list_union",
-        alt=(
-            "Interval(interval_list1)"
-            ".union(interval_list2, min_length, max_length).times"
-        ),
-        doc=_INTERVAL_DOC,
-    )
-
-    return (
-        Interval(interval_list1)
-        .union(interval_list2, min_length, max_length)
-        .times
-    )
-
-
-def interval_list_censor(interval_list, timestamps):
-    """Returns new interval list that starts/ends at first/last timestamp
-
-    Parameters
-    ----------
-    interval_list : numpy array of intervals [start, stop]
-        interval list from IntervalList valid times
-    timestamps : numpy array or list
-
-    Returns
-    -------
-    interval_list (numpy array of intervals [start, stop])
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_list_censor",
-        alt="Interval(interval_list).censor(timestamps).times",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(interval_list).censor(timestamps).times
-
-
-def interval_from_inds(list_frames):
-    """Converts a list of indices to a list of intervals.
-
-    e.g. [2,3,4,6,7,8,9,10] -> [[2,4],[6,10]]
-
-    Parameters
-    ----------
-    list_frames : array_like of int
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_from_inds",
-        alt="Interval(list_frames, from_inds=True).times",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(list_frames, from_inds=True).times
-
-
-def interval_set_difference_inds(intervals1, intervals2):
-    """
-    e.g.
-    intervals1 = [(0, 5), (8, 10)]
-    intervals2 = [(1, 2), (3, 4), (6, 9)]
-
-    result = [(0, 1), (4, 5), (9, 10)]
-
-    Parameters
-    ----------
-    intervals1 : IntervalLike
-    intervals2 : IntervalLike
-
-    Returns
-    -------
-    np.ndarray
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_set_difference_inds",
-        alt="Interval(intervals1).subtract(intervals2).times",
-        doc=_INTERVAL_DOC,
-    )
-    return Interval(intervals1).subtract(intervals2).times
-
-
-def interval_list_complement(intervals1, intervals2, min_length=0.0):
-    """
-    Finds intervals in intervals1 that are not in intervals2
-
-    Parameters
-    ----------
-    min_length : float, optional
-        Minimum interval length in seconds. Defaults to 0.0.
-    """
-    from spyglass.common.common_usage import ActivityLog
-
-    ActivityLog().deprecate_log(
-        "interval_list_complement",
-        alt="Interval(intervals1).subtract(intervals2, min_length=min_length).times",
-        doc=_INTERVAL_DOC,
-    )
-    return (
-        Interval(intervals1).subtract(intervals2, min_length=min_length).times
-    )
