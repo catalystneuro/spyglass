@@ -30,6 +30,10 @@ from spyglass.common.common_ephys import (
     Raw,
     SampleCount,
 )
+from spyglass.common.common_external_resources import (
+    ExternalResources,
+    OntologyTerm,
+)
 from spyglass.common.common_filter import FirFilterParameters
 from spyglass.common.common_interval import IntervalList, Interval
 from spyglass.common.common_lab import Institution, Lab, LabMember, LabTeam
@@ -98,6 +102,7 @@ __all__ = [
     "Electrode",
     "ImportedEvents",
     "ElectrodeGroup",
+    "ExternalResources",
     "FirFilterParameters",
     "LFP",
     "LFPBand",
@@ -120,6 +125,7 @@ __all__ = [
     "LabTeam",
     "LinearizationParameters",
     "Nwbfile",
+    "OntologyTerm",
     "OpticalFiber",
     "OpticalFiberDevice",
     "OpticalFiberImplant",

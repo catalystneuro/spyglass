@@ -140,6 +140,8 @@ rows = SpikeSortingOutput().get_sort_group_info(merge_keys).fetch(as_dict=True)
     - Support rate-based external `ImageSeries` in `VideoFile` #XXXX
     - Create a default epoch for files with videos but no task metadata #XXXX
     - Add `ImportedEvents` for NWB core `EventsTable` #XXXX
+    - Add `ExternalResources` (with `.Reference`) and `OntologyTerm` to ingest an
+        NWB file's HERD external resource annotations #XXXX
 
 - Decoding
 
