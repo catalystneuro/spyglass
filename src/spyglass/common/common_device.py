@@ -305,7 +305,8 @@ class CameraDevice(SpyglassIngestion, dj.Manual):
     # NWB device types ingested as cameras: the ndx-franklab-novela CameraDevice,
     # and ndx-pose's CalibratedCamera (>=0.4.0, used for multi-camera 3D pose).
     # CalibratedCamera has no camera_name/meters_per_pixel/lens, so those fall
-    # back to the device name and the table defaults.
+    # back to the device name and the table defaults. Cameras written as other
+    # Device types are found through their videos (get_camera_devices).
     CAMERA_NWB_TYPES = ("CameraDevice", "CalibratedCamera")
 
     @property
@@ -313,10 +314,27 @@ class CameraDevice(SpyglassIngestion, dj.Manual):
         return "CameraDevice"
 
     def get_nwb_objects(self, nwb_file, nwb_file_name=None):
+        return self.get_camera_devices(nwb_file)
+
+    @classmethod
+    def get_camera_devices(cls, nwb_file) -> list:
+        """The file's cameras: camera-typed devices and video-recording devices.
+
+        Core NWB has no camera type, so a camera can also be a plain Device
+        that an ImageSeries records with (`ImageSeries.device`). Only
+        ImageSeries itself counts, not its subclasses: a TwoPhotonSeries can
+        link a microscope.
+        """
+        video_device_ids = {
+            obj.device.object_id
+            for obj in nwb_file.objects.values()
+            if is_nwb_obj_type(obj, "ImageSeries")
+            and getattr(obj, "device", None) is not None
+        }
         return [
             obj
             for obj in nwb_file.objects.values()
-            if self.is_camera_device(obj)
+            if cls.is_camera_device(obj) or obj.object_id in video_device_ids
         ]
 
     @property
