@@ -19,6 +19,7 @@ from spyglass.common.common_device import (
     ProbeType,
 )
 from spyglass.common.common_dio import DIOEvents
+from spyglass.common.common_events import ImportedEvents
 from spyglass.common.common_ephys import (
     Electrode,
     ElectrodeGroup,
@@ -160,6 +161,10 @@ def populate_all_common(
     returned list only ever describes the current attempt.
     """
     from spyglass.lfp.lfp_imported import ImportedLFP
+    from spyglass.position.v1.imported_multicam_pose import (
+        CameraCalibration,
+        ImportedMultiCameraPose,
+    )
     from spyglass.position.v1.imported_pose import ImportedPose
     from spyglass.spikesorting.imported import ImportedSpikeSorting
 
@@ -210,10 +215,12 @@ def populate_all_common(
             Raw,  # Depends on Session
             SampleCount,  # Depends on Session
             DIOEvents,  # Depends on Session
+            ImportedEvents,  # Depends on Session
             ImportedSpikeSorting,  # Depends on Session
             SensorData,  # Depends on Session
             IntervalList,  # Depends on Session
             TaskEpoch,  # Depends on Session, Task, CamearaDevice, IntervalList
+            CameraCalibration,  # Depends on Session and CameraDevice
             # NwbfileKachery, # Not used by default
         ],
         [  # Tables that depend on above transaction
@@ -223,6 +230,7 @@ def populate_all_common(
             VideoFile,  # Depends on TaskEpoch
             StateScriptFile,  # Depends on TaskEpoch
             ImportedPose,  # Depends on Session
+            ImportedMultiCameraPose,  # Depends on VideoFile, CameraCalibration
             ImportedLFP,  # Depends on ElectrodeGroup
             VirusInjection,  # Depends on Session
             OpticalFiberImplant,  # Depends on Session and OpticalFiberDevice
