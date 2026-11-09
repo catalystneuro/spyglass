@@ -142,6 +142,8 @@ rows = SpikeSortingOutput().get_sort_group_info(merge_keys).fetch(as_dict=True)
     - Add `ImportedEvents` for NWB core `EventsTable` #XXXX
     - Add `ExternalResources` (with `.Reference`) and `OntologyTerm` to ingest an
         NWB file's HERD external resource annotations #XXXX
+    - Add `HedMetadata` and `HedAnnotation` (with `.Row`) to ingest an NWB file's
+        HED schema version, definitions and `HedTags` columns #XXXX
 
 - Decoding
 
@@ -453,16 +455,17 @@ for label, interval_data in results.groupby("interval_labels"):
 - Common
 
     - Add tables for storing optogenetic experiment information #1312
-    - Add `common_photometry` tables for ingesting `ndx-fiber-photometry`
-        metadata (device catalog + `FiberPhotometryConfig`); gate the
-        `common_optogenetics` fiber tables off photometry fibers (no schema change)
+    - Add `common_photometry` tables for ingesting `ndx-fiber-photometry` metadata
+        (device catalog + `FiberPhotometryConfig`); gate the `common_optogenetics`
+        fiber tables off photometry fibers (no schema change)
     - Add `FiberPhotometryResponseSeries` (+ `.Fiber` part) to `common_photometry`
         for retrieving recorded fluorescence traces by NWB object id, with a
-        `fetch1_dataframe()` helper (arrays stay in the file) and an `IntervalList`
-        of each series' valid times
-    - Link `FiberPhotometryConfig` to the shared `common_optogenetics.VirusInjection`
-        for a fiber's viral-injection provenance (nullable FK + `fetch_injection()`
-        accessor; single source of truth, no new injection table)
+        `fetch1_dataframe()` helper (arrays stay in the file) and an
+        `IntervalList` of each series' valid times
+    - Link `FiberPhotometryConfig` to the shared
+        `common_optogenetics.VirusInjection` for a fiber's viral-injection
+        provenance (nullable FK + `fetch_injection()` accessor; single source of
+        truth, no new injection table)
     - Normalize the `FiberPhotometryConfig` implant site into the shared
         `BrainRegion` lookup (as electrodes do), so photometry sites are queryable
         alongside ephys regions

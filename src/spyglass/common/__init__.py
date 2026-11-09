@@ -35,6 +35,7 @@ from spyglass.common.common_external_resources import (
     OntologyTerm,
 )
 from spyglass.common.common_filter import FirFilterParameters
+from spyglass.common.common_hed import HedAnnotation, HedMetadata
 from spyglass.common.common_interval import IntervalList, Interval
 from spyglass.common.common_lab import Institution, Lab, LabMember, LabTeam
 from spyglass.common.common_nwbfile import (
@@ -104,6 +105,8 @@ __all__ = [
     "ElectrodeGroup",
     "ExternalResources",
     "FirFilterParameters",
+    "HedAnnotation",
+    "HedMetadata",
     "LFP",
     "LFPBand",
     "LFPBandSelection",

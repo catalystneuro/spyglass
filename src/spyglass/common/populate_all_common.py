@@ -21,6 +21,7 @@ from spyglass.common.common_device import (
 from spyglass.common.common_dio import DIOEvents
 from spyglass.common.common_events import ImportedEvents
 from spyglass.common.common_external_resources import ExternalResources
+from spyglass.common.common_hed import HedAnnotation, HedMetadata
 from spyglass.common.common_ephys import (
     Electrode,
     ElectrodeGroup,
@@ -239,6 +240,8 @@ def populate_all_common(
             FiberPhotometryConfig,  # Depends on Session and photometry devices
             FiberPhotometryResponseSeries,  # Depends on FiberPhotometryConfig
             ExternalResources,  # Depends on Session; also fills OntologyTerm
+            HedMetadata,  # Depends on Session
+            HedAnnotation,  # Depends on Session
         ],
     ]
 
