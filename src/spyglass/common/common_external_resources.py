@@ -42,9 +42,8 @@ class OntologyTerm(SpyglassIngestion, dj.Manual):
     # Terms are shared: files annotated with the same term reuse its row.
     _expected_duplicates = True
     _source_nwb_object_type = "HERD"
-    table_key_to_obj_attr = (
-        {}
-    )  # entries come from generate_entries_from_nwb_object
+    # Entries come from generate_entries_from_nwb_object
+    table_key_to_obj_attr = {}
 
     def generate_entries_from_nwb_object(self, nwb_obj, base_key=None):
         """One entry per distinct term in the HERD."""
@@ -87,9 +86,8 @@ class ExternalResources(SpyglassIngestion, dj.Manual):
     # FKs -> Session, not -> Nwbfile, so point fetch_nwb() at the file table.
     _nwb_table = Nwbfile
     _source_nwb_object_type = "HERD"
-    table_key_to_obj_attr = (
-        {}
-    )  # entries come from generate_entries_from_nwb_object
+    # Entries come from generate_entries_from_nwb_object
+    table_key_to_obj_attr = {}
 
     def generate_entries_from_nwb_object(self, nwb_obj, base_key=None):
         """OntologyTerm, master and ``.Reference`` entries for one HERD.
