@@ -133,6 +133,7 @@ rows = SpikeSortingOutput().get_sort_group_info(merge_keys).fetch(as_dict=True)
 - Common
 
     - Run `UserEnvironment` pip freeze via the active interpreter #1678
+    - Add `ImportedEvents` for NWB core `EventsTable` #XXXX
 
 - Decoding
 
