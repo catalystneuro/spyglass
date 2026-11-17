@@ -140,6 +140,8 @@ rows = SpikeSortingOutput().get_sort_group_info(merge_keys).fetch(as_dict=True)
     - Support rate-based external `ImageSeries` in `VideoFile` #XXXX
     - Add `ExternalResources` (with `.Reference`) and `OntologyTerm` to ingest an
         NWB file's HERD external resource annotations #XXXX
+    - Add `HedMetadata` and `HedAnnotation` (with `.Row`) to ingest an NWB file's
+        HED schema version, definitions and `HedTags` columns #XXXX
 
 - Decoding
 

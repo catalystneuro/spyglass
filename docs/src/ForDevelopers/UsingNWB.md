@@ -429,3 +429,12 @@ hdmf.common.resources.HERD </b>
 | ExternalResources           | herd_object_id  |          nwbf.external_resources.object_id |               |       one entry per file |
 | ExternalResources.Reference | reference_index | nwbf.external_resources.to_dataframe() row |               | object, path, field, key |
 | OntologyTerm                |    entity_id    |     nwbf.external_resources entities table |               |      shared across files |
+
+<b> NWBfile Location: nwbf.lab_meta_data and any DynamicTable <br/> Object
+types: ndx_hed.HedLabMetaData, ndx_hed.HedTags </b>
+
+| Spyglass Table    |        Key         |                  NWBfile Location | Config option |                        Notes |
+| :---------------- | :----------------: | --------------------------------: | ------------: | ---------------------------: |
+| HedMetadata       | hed_schema_version | HedLabMetaData.hed_schema_version |               |           one entry per file |
+| HedAnnotation     |   hed_object_id    |          HedTags column object_id |               | one entry per HedTags column |
+| HedAnnotation.Row |     row_index      |                HedTags column row |               |           HED string per row |
