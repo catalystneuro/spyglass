@@ -138,6 +138,8 @@ rows = SpikeSortingOutput().get_sort_group_info(merge_keys).fetch(as_dict=True)
     - Ingest a plain core `Device` as a camera when an `ImageSeries` records with
         it, so `TaskEpoch` resolves its camera ID #XXXX
     - Support rate-based external `ImageSeries` in `VideoFile` #XXXX
+    - Add `ExternalResources` (with `.Reference`) and `OntologyTerm` to ingest an
+        NWB file's HERD external resource annotations #XXXX
 
 - Decoding
 
