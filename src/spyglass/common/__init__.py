@@ -19,6 +19,7 @@ from spyglass.common.common_device import (
     ProbeType,
 )
 from spyglass.common.common_dio import DIOEvents
+from spyglass.common.common_eeg import ImportedEEG
 from spyglass.common.common_ephys import (
     LFP,
     Electrode,
@@ -87,6 +88,7 @@ __all__ = [
     "Electrode",
     "ElectrodeGroup",
     "FirFilterParameters",
+    "ImportedEEG",
     "LFP",
     "LFPBand",
     "LFPBandSelection",
