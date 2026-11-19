@@ -40,6 +40,7 @@ from spyglass.common.common_optogenetics import (
 )
 from spyglass.common.common_sensors import SensorData
 from spyglass.common.common_session import Session
+from spyglass.common.common_sleep import SeizureEvents, SleepStateScoring
 from spyglass.common.common_subject import Subject
 from spyglass.common.common_task import TaskEpoch
 from spyglass.common.common_usage import InsertError
@@ -218,6 +219,8 @@ def populate_all_common(
             ExternalResources,  # Depends on Session; also fills OntologyTerm
             HedMetadata,  # Depends on Session
             HedAnnotation,  # Depends on Session
+            SleepStateScoring,  # Depends on Session
+            SeizureEvents,  # Depends on Session
         ],
     ]
 

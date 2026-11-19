@@ -438,3 +438,13 @@ types: ndx_hed.HedLabMetaData, ndx_hed.HedTags </b>
 | HedMetadata       | hed_schema_version | HedLabMetaData.hed_schema_version |               |           one entry per file |
 | HedAnnotation     |   hed_object_id    |          HedTags column object_id |               | one entry per HedTags column |
 | HedAnnotation.Row |     row_index      |                HedTags column row |               |           HED string per row |
+
+<b> NWBfile Location: any pynwb.epoch.TimeIntervals, usually in a processing
+module <br/> Object type: pynwb.epoch.TimeIntervals </b>
+
+| Spyglass Table          |          Key           |                       NWBfile Location | Config option |                                  Notes |
+| :---------------------- | :--------------------: | -------------------------------------: | ------------: | -------------------------------------: |
+| SleepStateScoring       |      scoring_name      |                    TimeIntervals.name |               | tables with a `sleep_state` column     |
+| SleepStateScoring.Epoch |      epoch_index       | start_time, stop_time, sleep_state row |               | one row per scored epoch               |
+| SeizureEvents           |   seizure_table_name   |                    TimeIntervals.name |               | tables named `seizure_events`          |
+| SeizureEvents.Event     |      event_index       |                  start_time, stop_time |               | one row per seizure                    |

@@ -137,6 +137,8 @@ rows = SpikeSortingOutput().get_sort_group_info(merge_keys).fetch(as_dict=True)
         NWB file's HERD external resource annotations #1722
     - Add `HedMetadata` and `HedAnnotation` (with `.Row`) to ingest an NWB file's
         HED schema version, definitions and `HedTags` columns #1723
+    - Add `SleepStateScoring` (with `.Epoch`) and `SeizureEvents` (with `.Event`)
+        to ingest sleep scoring and seizure `TimeIntervals` tables
 
 - Decoding
 
